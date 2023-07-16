@@ -11,6 +11,7 @@ from une_ai.models import GridMap
 from snake_agent import SnakeAgent
 from queue import Queue
 from une_ai.models import GraphNode
+from itertools import permutations
 
 envirnment_map = None #GridMap(64, 48, True)
 
@@ -102,13 +103,10 @@ def snake_agent_program(percepts, actuators):
         target = food_locations[0]
         global current_food
 
-        if current_food != target:
-            current_food = target
+        if len(path_to_food) == 0:
+            #current_food = target
             # Search goal starting from head
-            goal_node = breadth_first_search(body[0], body, is_current_food, actuators['head'])
-
-            if goal_node:
-                path_to_food, cost = goal_node.get_path()
+            path_to_food, current_food = get_optimal_path(body, permutations(food_locations), actuators['head'])
         if len(path_to_food) == 1: # If food is one tile away
             actions.append('open-mouth')
         elif actuators['mouth'] == 'open-mouth':
@@ -193,23 +191,29 @@ def distance_between_points(point_1, point_2):
     """
     return math.sqrt(pow(point_1[0] - point_2[0], 2) + pow(point_1[1] - point_2[1], 2))
 
-def get_optimal_path(body, permutations, goal_function, direction):
+def get_optimal_path(body, permutations, direction):
     optimal_path = []
     max_value = 0
-
+    
     for permutation in permutations:
         path = []
         net_value = 0
         start = body[0]
 
         for food in permutation:
-            node = breadth_first_search(start, body, goal_function, direction)
+            def is_food_target(node_state):
+                if node_state[0] == food[0] and node_state[1] == food[1]:
+                    return True
+                return False
+            node = breadth_first_search(start, body, is_food_target, direction)
             temp_path, cost = node.get_path()
             path = path + temp_path
             net_value += food[2] - cost
-
-            if net_value > max_value:
-                optimal_path = path
-                max_value = net_value
+            start = node.get_state()
+        if len(optimal_path) == 0:
+            optimal_path = path
+        if net_value > max_value:
+            optimal_path = path
+            max_value = net_value
 
     return (optimal_path, node.get_state())

@@ -41,7 +41,7 @@ class SnakeAgent(Agent):
     self.add_actuator(actuator_name, initial_value, validation_function)
     """
     def add_all_actuators(self):
-        self.add_actuator('head', None, lambda v: v in SnakeAgent.DIRECTIONS or v is None)
+        self.add_actuator('head', 'right', lambda v: v in SnakeAgent.DIRECTIONS or v is None)
         self.add_actuator('mouth', 'open', lambda v: v in ['open', 'close'])
 
     """
