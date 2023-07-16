@@ -102,13 +102,13 @@ def snake_agent_program(percepts, actuators):
         target = food_locations[0]
         global current_food
 
-        if current_food != target:
+        """if current_food != target:
             current_food = target
             # Search goal starting from head
             goal_node = breadth_first_search(body[0], body, is_current_food, actuators['head'])
-
-            if goal_node:
-                path_to_food, cost = goal_node.get_path()
+        """
+        if len(path_to_food) == 0:
+            path_to_food = net_cost(food_locations, body,is_current_food, actuators['head'])
         if len(path_to_food) == 1: # If food is one tile away
             actions.append('open-mouth')
         elif actuators['mouth'] == 'open-mouth':
