@@ -192,3 +192,14 @@ def distance_between_points(point_1, point_2):
         return - the calculated distance betwwen the points
     """
     return math.sqrt(pow(point_1[0] - point_2[0], 2) + pow(point_1[1] - point_2[1], 2))
+
+def net_cost(food_items, body, goal_function, direction):
+    path = []
+    net_cost = -1000
+    for food in food_items:
+        node = breadth_first_search(body[0], body, lambda x: x[0]==food[0] and x[1]==food[1], direction)
+        food_path, cost = node.get_path()
+        net = food[2] - cost
+        if net > net_cost:
+            path = food_path
+    return path
