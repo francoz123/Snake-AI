@@ -81,12 +81,13 @@ Please, do not change the parameters of this function.
 """
 
 current_food = None # Holds the current food coordinates
+current_food_set = []
 path_to_food = []
 
 def snake_agent_program(percepts, actuators):
 
     actions = []
-    global envirnment_map, path_to_food
+    global envirnment_map, path_to_food, current_food_set
     body = percepts['body-sensor']
     head = body[0]
     # Initialze a model of the environment, marking obstacles
@@ -97,16 +98,23 @@ def snake_agent_program(percepts, actuators):
             envirnment_map.set_item_value(obsacle[0], obsacle[1], False)
     
     food_locations = percepts['food-sensor']
+    print("food - {0}".format (current_food_set))
     food_locations.sort(key = lambda x: distance_between_points(x, head)) 
 
     if len(food_locations) > 0:
         target = food_locations[0]
         global current_food
 
-        if len(path_to_food) == 0:
-            #current_food = target
+        if len(current_food_set) == 0:
+            current_food_set = list(get_optimal_path(body, permutations(food_locations), actuators['head']))
+            print(len(current_food_set))
             # Search goal starting from head
-            path_to_food, current_food = get_optimal_path(body, permutations(food_locations), actuators['head'])
+        if len(path_to_food) == 0:
+            current_food = current_food_set.pop(0)
+        #if current_food != target:
+            #current_food = target
+            node = breadth_first_search(head, body, is_current_food, actuators['head'])
+            path_to_food, _ = node.get_path()
         if len(path_to_food) == 1: # If food is one tile away
             actions.append('open-mouth')
         elif actuators['mouth'] == 'open-mouth':
@@ -114,6 +122,7 @@ def snake_agent_program(percepts, actuators):
 
         if len(path_to_food) > 0:
             current_action = path_to_food.pop(0)
+            print(current_action)
             if current_action is not None:
                 actions.append(current_action)
     
@@ -211,9 +220,11 @@ def get_optimal_path(body, permutations, direction):
             net_value += food[2] - cost
             start = node.get_state()
         if len(optimal_path) == 0:
-            optimal_path = path
-        if net_value > max_value:
-            optimal_path = path
+            optimal_path = permutation
             max_value = net_value
+        if net_value > max_value:
+            optimal_path = permutation
+            max_value = net_value
+        net_value = 0
 
-    return (optimal_path, node.get_state())
+    return (optimal_path)
