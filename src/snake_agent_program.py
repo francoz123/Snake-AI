@@ -192,3 +192,24 @@ def distance_between_points(point_1, point_2):
         return - the calculated distance betwwen the points
     """
     return math.sqrt(pow(point_1[0] - point_2[0], 2) + pow(point_1[1] - point_2[1], 2))
+
+def get_optimal_path(body, permutations, goal_function, direction):
+    optimal_path = []
+    max_value = 0
+
+    for permutation in permutations:
+        path = []
+        net_value = 0
+        start = body[0]
+
+        for food in permutation:
+            node = breadth_first_search(start, body, goal_function, direction)
+            temp_path, cost = node.get_path()
+            path = path + temp_path
+            net_value += food[2] - cost
+
+            if net_value > max_value:
+                optimal_path = path
+                max_value = net_value
+
+    return (optimal_path, node.get_state())
