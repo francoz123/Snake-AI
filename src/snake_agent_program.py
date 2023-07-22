@@ -9,7 +9,9 @@ the Python package une_ai
 import math
 from une_ai.models import GridMap
 from snake_agent import SnakeAgent
-from queue import Queue
+import numpy as np
+from queue import Queue, LifoQueue, PriorityQueue
+from prioritized_item import PrioritizedItem
 from une_ai.models import GraphNode
 
 envirnment_map = None #GridMap(64, 48, True)
@@ -96,7 +98,8 @@ def snake_agent_program(percepts, actuators):
             envirnment_map.set_item_value(obsacle[0], obsacle[1], False)
     
     food_locations = percepts['food-sensor']
-    food_locations.sort(key = lambda x: distance_between_points(x, head)) 
+    food_locations.sort(key = lambda x: distance_between_points(x, head))
+    #food_locations.sort(key = lambda x: x[2]) 
 
     if len(food_locations) > 0:
         target = food_locations[0]
@@ -203,3 +206,52 @@ def net_cost(food_items, body, goal_function, direction):
         if net > net_cost:
             path = food_path
     return path
+
+def heuristic_cost(current_node, goal_function):
+    # Compute the straight distance
+    # from the current_node to all goal states
+    straight_distances = []
+    for x in range(0, w_env):
+        for y in range(0, h_env):
+            if goal_function((x, y)):
+                cur_dist = math.sqrt((current_node[0] - x)**2 + (current_node[1] - y)**2)
+                straight_distances.append(cur_dist)
+        
+    # return the minimum cost among the computed distances
+    return np.min(straight_distances)
+
+# Finally, we can implement the A* start search
+# In this scenario, the costs are uniform (all 1) so 
+# The A* search will return the same solutions as the greedy-best first search
+# However, the implementation will be sligthly different
+def A_star_search(start_coords, goal_function):
+    # You can start from the implementation of the greedy-best first search
+    # However, the priority value will not only be the heuristic cost
+    # predicted by the heuristic function, but a sum of that cost and
+    # the cost of the path to reach the node
+
+    initial_state = GraphNode(start_coords, None, None, 0)
+    if goal_function(initial_state.get_state()):
+        return initial_state
+    frontier = PriorityQueue()
+    # THESE LINES CHANGED
+    _, g = initial_state.get_path()
+    h = heuristic_cost(initial_state.get_state(), goal_function)
+    frontier.put(PrioritizedItem(g+h, initial_state))
+    # ------
+    reached = [initial_state.get_state()]
+    while frontier.qsize() > 0:
+        cur_item = frontier.get()
+        cur_node = cur_item.item
+        successors = adjacent_tiles(cur_node)
+        for successor in successors:
+            if goal_function(successor.get_state()):
+                return successor
+            successor_state = successor.get_state()
+            if successor_state not in reached:
+                reached.append(successor_state)
+                # THESE LINES CHANGED
+                _, g = successor.get_path()
+                h = heuristic_cost(successor.get_state(), goal_function)
+                frontier.put(PrioritizedItem(g+h, successor))
+                # -----
