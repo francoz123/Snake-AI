@@ -114,7 +114,7 @@ def snake_agent_program(percepts, actuators):
                 path_to_food, cost = goal_node.get_path()
         if len(path_to_food) == 1: # If food is one tile away
             actions.append('open-mouth')
-        elif actuators['mouth'] == 'open-mouth':
+        else:
             actions.append('close-mouth')
 
         if len(path_to_food) > 0:
