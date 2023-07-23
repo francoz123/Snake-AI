@@ -98,8 +98,7 @@ def snake_agent_program(percepts, actuators):
             envirnment_map.set_item_value(obsacle[0], obsacle[1], False)
     
     food_locations = percepts['food-sensor']
-    food_locations.sort(key = lambda x: distance_between_points(x, head))
-    #food_locations.sort(key = lambda x: x[2]) 
+    food_locations.sort(key = lambda x: distance_between(x, head))
 
     if len(food_locations) > 0:
         target = food_locations[0]
@@ -187,7 +186,7 @@ def get_next_to_tail(body, direction):
         return (last[0], last[1] - 1)
     return (last[0], last[1] + 1) # Moving up
 
-def distance_between_points(point_1, point_2):
+def distance_between(point_1, point_2):
     """ Calculates distance between points
     Argument:
         ponts_1 - coordinates of the initial point
@@ -195,17 +194,6 @@ def distance_between_points(point_1, point_2):
         return - the calculated distance betwwen the points
     """
     return math.sqrt(pow(point_1[0] - point_2[0], 2) + pow(point_1[1] - point_2[1], 2))
-
-def net_cost(food_items, body, goal_function, direction):
-    path = []
-    net_cost = -1000
-    for food in food_items:
-        node = breadth_first_search(body[0], body, lambda x: x[0]==food[0] and x[1]==food[1], direction)
-        food_path, cost = node.get_path()
-        net = food[2] - cost
-        if net > net_cost:
-            path = food_path
-    return path
 
 def heuristic_cost(current_node, goal_function):
     # Compute the straight distance
@@ -256,11 +244,3 @@ def A_star_search(start_coords, goal_function):
                 frontier.put(PrioritizedItem(g+h, successor))
                 # -----
     return False
-
-def total_cost(stgart_cord, destinations):
-    total_cost = 0
-    start = stgart_cord
-    for destination in destinations:
-        total_cost += math.sqrt((start[0] - destination[0])**2 + (start[0] - destination[0])**2)
-        start = destination
-    return total_cost
