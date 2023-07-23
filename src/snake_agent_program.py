@@ -255,3 +255,12 @@ def A_star_search(start_coords, goal_function):
                 h = heuristic_cost(successor.get_state(), goal_function)
                 frontier.put(PrioritizedItem(g+h, successor))
                 # -----
+    return False
+
+def total_cost(stgart_cord, destinations):
+    total_cost = 0
+    start = stgart_cord
+    for destination in destinations:
+        total_cost += math.sqrt((start[0] - destination[0])**2 + (start[0] - destination[0])**2)
+        start = destination
+    return total_cost
